@@ -1,0 +1,2682 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>LinealizaSalud | José Alvarez</title>
+
+    <!-- =====================================================
+         MATH.JS
+         ===================================================== -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/15.2.0/math.min.js"></script>
+
+    <!-- =====================================================
+         PLOTLY
+         ===================================================== -->
+    <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@4.1.2/plotly.min.js"></script>
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background:
+                linear-gradient(135deg, #eefaf8, #f5f8ff);
+            color: #1f2937;
+        }
+
+        /* =====================================================
+           ENCABEZADO
+           ===================================================== */
+
+        header {
+            background:
+                linear-gradient(135deg, #075e54, #0f766e, #155e75);
+            color: white;
+            padding: 35px 20px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 38px;
+        }
+
+        header p {
+            margin: 10px 0 0;
+            font-size: 18px;
+        }
+
+        .autor {
+            margin-top: 15px;
+            font-size: 15px;
+            opacity: 0.9;
+        }
+
+        /* =====================================================
+           CONTENEDOR
+           ===================================================== */
+
+        .contenedor {
+            width: 94%;
+            max-width: 1250px;
+            margin: 30px auto;
+        }
+
+        .tarjeta {
+            background: white;
+            border-radius: 18px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow:
+                0 10px 30px rgba(0,0,0,0.07);
+        }
+
+        .titulo {
+            color: #075e54;
+            margin-top: 0;
+        }
+
+        /* =====================================================
+           ESCENARIOS
+           ===================================================== */
+
+        .escenarios {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(210px, 1fr));
+            gap: 15px;
+        }
+
+        .escenario {
+            border: 2px solid #e5e7eb;
+            border-radius: 15px;
+            padding: 18px;
+            cursor: pointer;
+            transition: 0.25s;
+            background: white;
+        }
+
+        .escenario:hover {
+            transform: translateY(-4px);
+            border-color: #0f766e;
+            box-shadow:
+                0 8px 20px rgba(15,118,110,0.12);
+        }
+
+        .escenario.activo {
+            border-color: #0f766e;
+            background: #ecfdf5;
+        }
+
+        .icono {
+            font-size: 32px;
+        }
+
+        .escenario h3 {
+            margin: 10px 0 7px;
+            color: #075e54;
+        }
+
+        .escenario p {
+            margin: 0;
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* =====================================================
+           INFORMACIÓN DEL CASO
+           ===================================================== */
+
+        .caso-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 20px;
+        }
+
+        @media(max-width: 800px) {
+            .caso-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .info {
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        .formula {
+            background:
+                linear-gradient(135deg, #ecfdf5, #ecfeff);
+            border-left: 5px solid #0f766e;
+            padding: 18px;
+            border-radius: 10px;
+            font-size: 22px;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        /* =====================================================
+           CONTROLES
+           ===================================================== */
+
+        .controles {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="number"] {
+            width: 100px;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .boton {
+            border: none;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 9px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .boton:hover {
+            transform: translateY(-2px);
+            opacity: 0.92;
+        }
+
+        .b1 {
+            background: #155e75;
+        }
+
+        .b2 {
+            background: #0f766e;
+        }
+
+        .b3 {
+            background: #7c3aed;
+        }
+
+        .b4 {
+            background: #334155;
+        }
+
+        /* =====================================================
+           GRÁFICA
+           ===================================================== */
+
+        #grafica {
+            width: 100%;
+            min-height: 520px;
+        }
+
+        /* =====================================================
+           RESULTADOS
+           ===================================================== */
+
+        .resultados {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .resultado {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 18px;
+            border-top: 4px solid #0f766e;
+        }
+
+        .resultado h4 {
+            margin-top: 0;
+            color: #475569;
+        }
+
+        .valor {
+            font-size: 18px;
+            font-weight: bold;
+            color: #075e54;
+            overflow-x: auto;
+        }
+
+        /* =====================================================
+           INTERPRETACIÓN
+           ===================================================== */
+
+        .interpretacion {
+            background: #fffbeb;
+            border-left: 5px solid #f59e0b;
+            padding: 20px;
+            border-radius: 10px;
+            line-height: 1.7;
+        }
+
+        /* =====================================================
+           CHATBOT
+           ===================================================== */
+
+        .chat {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .chat-mensajes {
+            height: 390px;
+            overflow-y: auto;
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 18px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .mensaje {
+            max-width: 85%;
+            padding: 12px 15px;
+            border-radius: 14px;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .bot {
+            background: #e0f2fe;
+            color: #0c4a6e;
+            border-bottom-left-radius: 4px;
+        }
+
+        .usuario {
+            background: #dcfce7;
+            color: #14532d;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-entrada {
+            display: flex;
+            gap: 10px;
+        }
+
+        #pregunta {
+            flex: 1;
+            padding: 13px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+
+        .preguntas-rapidas {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .pregunta-btn {
+            border: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            background: #e2e8f0;
+            cursor: pointer;
+        }
+
+        .pregunta-btn:hover {
+            background: #cbd5e1;
+        }
+
+        /* =====================================================
+           NOTA
+           ===================================================== */
+
+        .nota {
+            background: #fef2f2;
+            border-left: 5px solid #dc2626;
+            padding: 15px;
+            border-radius: 10px;
+            color: #7f1d1d;
+            line-height: 1.6;
+        }
+
+        /* =====================================================
+           PIE
+           ===================================================== */
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================================================
+     ENCABEZADO
+     ========================================================= -->
+
+<header>
+
+    <h1>
+        🩺 LinealizaSalud
+    </h1>
+
+    <p>
+        Cálculo I aplicado al primer nivel de atención
+    </p>
+
+    <div class="autor">
+        Autor: <strong>José Alvarez</strong>
+    </div>
+
+</header>
+
+
+
+<div class="contenedor">
+
+
+    <!-- =====================================================
+         INTRODUCCIÓN
+         ===================================================== -->
+
+    <div class="tarjeta">
+
+        <h2 class="titulo">
+            📚 Simulador educativo
+        </h2>
+
+        <p>
+            Esta aplicación permite estudiar funciones no lineales
+            relacionadas con situaciones de salud y analizar su
+            comportamiento mediante derivadas, linealización y
+            diferenciales.
+        </p>
+
+        <p>
+            Selecciona un escenario y posteriormente utiliza las
+            herramientas matemáticas disponibles.
+        </p>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         ESCENARIOS
+         ===================================================== -->
+
+    <div class="tarjeta">
+
+        <h2 class="titulo">
+            🏥 Escenarios de salud
+        </h2>
+
+        <div class="escenarios">
+
+
+            <div class="escenario activo"
+                 id="caso0"
+                 onclick="seleccionarCaso(0)">
+
+                <div class="icono">📈</div>
+
+                <h3>
+                    Crecimiento de casos
+                </h3>
+
+                <p>
+                    Modelo exponencial simplificado.
+                </p>
+
+            </div>
+
+
+
+            <div class="escenario"
+                 id="caso1"
+                 onclick="seleccionarCaso(1)">
+
+                <div class="icono">💉</div>
+
+                <h3>
+                    Vacunación
+                </h3>
+
+                <p>
+                    Modelo logístico de cobertura.
+                </p>
+
+            </div>
+
+
+
+            <div class="escenario"
+                 id="caso2"
+                 onclick="seleccionarCaso(2)">
+
+                <div class="icono">💊</div>
+
+                <h3>
+                    Medicamento
+                </h3>
+
+                <p>
+                    Concentración hipotética.
+                </p>
+
+            </div>
+
+
+
+            <div class="escenario"
+                 id="caso3"
+                 onclick="seleccionarCaso(3)">
+
+                <div class="icono">⚕️</div>
+
+                <h3>
+                    Riesgo de enfermedad
+                </h3>
+
+                <p>
+                    Modelo logístico simplificado.
+                </p>
+
+            </div>
+
+
+
+            <div class="escenario"
+                 id="caso4"
+                 onclick="seleccionarCaso(4)">
+
+                <div class="icono">🩸</div>
+
+                <h3>
+                    Glucemia
+                </h3>
+
+                <p>
+                    Cambio no lineal simplificado.
+                </p>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 CASO ESPECIAL ESCUINTLA
+                 ================================================= -->
+
+            <div class="escenario"
+                 id="caso5"
+                 onclick="seleccionarCaso(5)">
+
+                <div class="icono">🏥</div>
+
+                <h3>
+                    ERC - Escuintla
+                </h3>
+
+                <p>
+                    Caso clínico epidemiológico hipotético.
+                </p>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         INFORMACIÓN
+         ===================================================== -->
+
+    <div class="tarjeta">
+
+        <div class="caso-grid">
+
+
+            <div class="info">
+
+                <h2 id="tituloCaso"
+                    class="titulo">
+
+                    Crecimiento de casos
+
+                </h2>
+
+                <p id="descripcionCaso">
+
+                    Modelo exponencial simplificado.
+
+                </p>
+
+                <div id="formulaOriginal"
+                     class="formula">
+
+                    C(t) = 100e⁰·⁰⁸ᵗ
+
+                </div>
+
+            </div>
+
+
+
+            <div class="info">
+
+                <h3 class="titulo">
+                    ⚙️ Parámetros
+                </h3>
+
+                <p>
+
+                    Punto de análisis:
+
+                </p>
+
+                <input
+                    type="number"
+                    id="punto"
+                    value="10"
+                    step="any"
+                >
+
+                <p>
+
+                    Cambio pequeño dx:
+
+                </p>
+
+                <input
+                    type="number"
+                    id="dx"
+                    value="0.5"
+                    step="any"
+                >
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- =================================================
+             BOTONES
+             ================================================= -->
+
+        <div class="controles">
+
+            <button
+                class="boton b1"
+                onclick="mostrarFuncion()">
+
+                📊 Ver función
+
+            </button>
+
+
+            <button
+                class="boton b2"
+                onclick="linealizar()">
+
+                📐 Linealizar
+
+            </button>
+
+
+            <button
+                class="boton b3"
+                onclick="calcularDiferencial()">
+
+                Δ Diferencial
+
+            </button>
+
+
+            <button
+                class="boton b4"
+                onclick="mostrarTodo()">
+
+                🚀 Análisis completo
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         GRÁFICA
+         ===================================================== -->
+
+    <div class="tarjeta">
+
+        <h2 class="titulo">
+            📊 Visualización
+        </h2>
+
+        <div id="grafica"></div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         RESULTADOS
+         ===================================================== -->
+
+    <div class="tarjeta">
+
+        <h2 class="titulo">
+            🧮 Resultados matemáticos
+        </h2>
+
+        <div class="resultados">
+
+
+            <div class="resultado">
+
+                <h4>
+                    Función
+                </h4>
+
+                <div id="resultadoFuncion"
+                     class="valor">
+
+                    —
+
+                </div>
+
+            </div>
+
+
+
+            <div class="resultado">
+
+                <h4>
+                    Derivada
+                </h4>
+
+                <div id="resultadoDerivada"
+                     class="valor">
+
+                    —
+
+                </div>
+
+            </div>
+
+
+
+            <div class="resultado">
+
+                <h4>
+                    f(a)
+                </h4>
+
+                <div id="resultadoFa"
+                     class="valor">
+
+                    —
+
+                </div>
+
+            </div>
+
+
+
+            <div class="resultado">
+
+                <h4>
+                    f'(a)
+                </h4>
+
+                <div id="resultadoFpa"
+                     class="valor">
+
+                    —
+
+                </div>
+
+            </div>
+
+
+
+            <div class="resultado">
+
+                <h4>
+                    Linealización L(x)
+                </h4>
+
+                <div id="resultadoL"
+                     class="valor">
+
+                    —
+
+                </div>
+
+            </div>
+
+
+
+            <div class="resultado">
+
+                <h4>
+                    Diferencial dy
+                </h4>
+
+                <div id="resultadoDy"
+                     class="valor">
+
+                    —
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         INTERPRETACIÓN
+         ===================================================== -->
+
+    <div class="tarjeta">
+
+        <h2 class="titulo">
+            💡 Interpretación
+        </h2>
+
+        <div id="interpretacion"
+             class="interpretacion">
+
+            Selecciona una herramienta para realizar
+            el análisis.
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         CHATBOT
+         ===================================================== -->
+
+    <div class="tarjeta">
+
+        <h2 class="titulo">
+            🤖 Tutor de Cálculo I
+        </h2>
+
+        <p>
+            Pregunta sobre derivadas, linealización,
+            diferenciales, gráficas o sobre el escenario
+            seleccionado.
+        </p>
+
+
+        <div class="chat">
+
+            <div id="chatMensajes"
+                 class="chat-mensajes">
+
+
+                <div class="mensaje bot">
+
+                    <strong>🤖 Tutor:</strong><br>
+
+                    Hola. Soy el tutor de Cálculo I de
+                    LinealizaSalud.
+
+                    <br><br>
+
+                    Puedes preguntarme:
+
+                    <br>
+                    • ¿Qué es la derivada?
+                    <br>
+                    • ¿Qué es la linealización?
+                    <br>
+                    • ¿Qué significa dy?
+                    <br>
+                    • ¿Cómo interpreto la gráfica?
+                    <br>
+                    • ¿Qué ocurre en este caso de salud?
+
+                </div>
+
+            </div>
+
+
+
+            <div class="preguntas-rapidas">
+
+                <button
+                    class="pregunta-btn"
+                    onclick="preguntaRapida('¿Qué es la derivada?')">
+
+                    ¿Qué es la derivada?
+
+                </button>
+
+
+                <button
+                    class="pregunta-btn"
+                    onclick="preguntaRapida('¿Qué es la linealización?')">
+
+                    ¿Qué es la linealización?
+
+                </button>
+
+
+                <button
+                    class="pregunta-btn"
+                    onclick="preguntaRapida('¿Qué es un diferencial?')">
+
+                    ¿Qué es un diferencial?
+
+                </button>
+
+
+                <button
+                    class="pregunta-btn"
+                    onclick="preguntaRapida('Explícame la gráfica')">
+
+                    Explícame la gráfica
+
+                </button>
+
+
+                <button
+                    class="pregunta-btn"
+                    onclick="preguntaRapida('Explícame el caso de salud')">
+
+                    Caso de salud
+
+                </button>
+
+            </div>
+
+
+
+            <div class="chat-entrada">
+
+                <input
+                    type="text"
+                    id="pregunta"
+                    placeholder="Escribe tu pregunta..."
+                    onkeydown="if(event.key === 'Enter') enviarPregunta()"
+                >
+
+                <button
+                    class="boton b2"
+                    onclick="enviarPregunta()">
+
+                    Enviar
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         NOTA METODOLÓGICA
+         ===================================================== -->
+
+    <div class="tarjeta">
+
+        <div class="nota">
+
+            <strong>
+                ⚠️ Nota académica:
+            </strong>
+
+            Los modelos incluidos en esta aplicación son
+            simplificaciones matemáticas creadas con fines
+            educativos. El caso de enfermedad renal crónica
+            en Escuintla es completamente hipotético y no
+            representa datos epidemiológicos reales ni implica
+            que la enfermedad renal crónica sea transmisible.
+            No debe utilizarse para diagnóstico, pronóstico
+            o toma de decisiones clínicas.
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+
+<!-- =========================================================
+     PIE DE PÁGINA
+     ========================================================= -->
+
+<footer>
+
+    <strong>
+        LinealizaSalud
+    </strong>
+
+    <br>
+
+    Aplicación educativa de Cálculo I
+
+    <br>
+
+    Autor: José Alvarez
+
+</footer>
+
+
+
+<script>
+
+
+/* ==========================================================
+   ESCENARIOS
+   ========================================================== */
+
+const casos = [
+
+    {
+        titulo: "Crecimiento de casos",
+
+        descripcion:
+            "Modelo exponencial simplificado para estudiar " +
+            "el incremento de casos a través del tiempo.",
+
+        formula:
+            "C(t) = 100e^(0.08t)",
+
+        expresion:
+            "100*exp(0.08*x)",
+
+        variable:
+            "t",
+
+        unidadX:
+            "días",
+
+        unidadY:
+            "casos",
+
+        a: 10,
+
+        dx: 0.5,
+
+        min: 0,
+
+        max: 20
+    },
+
+
+    {
+        titulo: "Cobertura de vacunación",
+
+        descripcion:
+            "Modelo logístico simplificado en el que la " +
+            "cobertura aumenta y posteriormente se acerca " +
+            "a un límite superior.",
+
+        formula:
+            "V(t) = 95 / (1 + 4e^(-0.5t))",
+
+        expresion:
+            "95/(1+4*exp(-0.5*x))",
+
+        variable:
+            "t",
+
+        unidadX:
+            "periodos",
+
+        unidadY:
+            "% de cobertura",
+
+        a: 6,
+
+        dx: 0.5,
+
+        min: 0,
+
+        max: 15
+    },
+
+
+    {
+        titulo: "Concentración de medicamento",
+
+        descripcion:
+            "Modelo exponencial decreciente para representar " +
+            "una concentración hipotética después de una " +
+            "intervención.",
+
+        formula:
+            "C(t) = 80e^(-0.25t)",
+
+        expresion:
+            "80*exp(-0.25*x)",
+
+        variable:
+            "t",
+
+        unidadX:
+            "horas",
+
+        unidadY:
+            "unidades",
+
+        a: 4,
+
+        dx: 0.25,
+
+        min: 0,
+
+        max: 15
+    },
+
+
+    {
+        titulo: "Riesgo de enfermedad",
+
+        descripcion:
+            "Modelo logístico didáctico para representar " +
+            "una relación no lineal entre exposición y un " +
+            "indicador de riesgo.",
+
+        formula:
+            "R(x) = 100 / (1 + e^(-(-5+0.1x)))",
+
+        expresion:
+            "100/(1+exp(-(-5+0.1*x)))",
+
+        variable:
+            "x",
+
+        unidadX:
+            "unidades de exposición",
+
+        unidadY:
+            "% de riesgo",
+
+        a: 50,
+
+        dx: 2,
+
+        min: 0,
+
+        max: 100
+    },
+
+
+    {
+        titulo: "Glucemia",
+
+        descripcion:
+            "Modelo didáctico simplificado para representar " +
+            "una disminución no lineal de un valor de glucemia.",
+
+        formula:
+            "G(t) = 110 + 25e^(-0.35t)",
+
+        expresion:
+            "110+25*exp(-0.35*x)",
+
+        variable:
+            "t",
+
+        unidadX:
+            "horas",
+
+        unidadY:
+            "mg/dL",
+
+        a: 2,
+
+        dx: 0.5,
+
+        min: 0,
+
+        max: 12
+    },
+
+
+    /* ======================================================
+       CASO ERC ESCUINTLA
+       ====================================================== */
+
+    {
+        titulo:
+            "ERC en Escuintla - escenario hipotético",
+
+        descripcion:
+            "Caso epidemiológico simulado para representar " +
+            "un incremento hipotético de diagnósticos de " +
+            "enfermedad renal crónica en una población de " +
+            "primer nivel de atención de Escuintla.",
+
+        formula:
+            "E(t) = 80e^(0.06t)",
+
+        expresion:
+            "80*exp(0.06*x)",
+
+        variable:
+            "t",
+
+        unidadX:
+            "meses",
+
+        unidadY:
+            "casos detectados",
+
+        a: 6,
+
+        dx: 0.5,
+
+        min: 0,
+
+        max: 24
+    }
+
+];
+
+
+let casoActual = 0;
+
+
+
+/* ==========================================================
+   SELECCIONAR CASO
+   ========================================================== */
+
+function seleccionarCaso(indice) {
+
+    casoActual = indice;
+
+    const caso = casos[indice];
+
+
+    document
+        .querySelectorAll(".escenario")
+        .forEach(elemento => {
+
+            elemento.classList.remove("activo");
+
+        });
+
+
+    document
+        .getElementById("caso" + indice)
+        .classList.add("activo");
+
+
+    document.getElementById(
+        "tituloCaso"
+    ).textContent = caso.titulo;
+
+
+    document.getElementById(
+        "descripcionCaso"
+    ).textContent = caso.descripcion;
+
+
+    document.getElementById(
+        "formulaOriginal"
+    ).textContent = caso.formula;
+
+
+    document.getElementById(
+        "punto"
+    ).value = caso.a;
+
+
+    document.getElementById(
+        "dx"
+    ).value = caso.dx;
+
+
+    mostrarFuncion();
+
+}
+
+
+
+/* ==========================================================
+   OBTENER DATOS
+   ========================================================== */
+
+function obtenerDatos() {
+
+    const caso = casos[casoActual];
+
+
+    const a =
+        Number(
+            document.getElementById("punto").value
+        );
+
+
+    const dx =
+        Number(
+            document.getElementById("dx").value
+        );
+
+
+    const f =
+        math.parse(caso.expresion);
+
+
+    const derivada =
+        math.derivative(f, "x");
+
+
+    const fa =
+        f.evaluate({
+            x: a
+        });
+
+
+    const fpa =
+        derivada.evaluate({
+            x: a
+        });
+
+
+    const L =
+        math.simplify(
+            `${fa}+(${fpa})*(x-${a})`
+        );
+
+
+    const dy =
+        fpa * dx;
+
+
+    return {
+
+        caso,
+        a,
+        dx,
+        f,
+        derivada,
+        fa,
+        fpa,
+        L,
+        dy
+
+    };
+
+}
+
+
+
+/* ==========================================================
+   CREAR VALORES PARA GRÁFICA
+   ========================================================== */
+
+function crearValores(datos) {
+
+    const x = [];
+
+    const y = [];
+
+    const cantidad = 300;
+
+
+    const paso =
+        (
+            datos.caso.max -
+            datos.caso.min
+        ) /
+        (cantidad - 1);
+
+
+    for (
+        let i = 0;
+        i < cantidad;
+        i++
+    ) {
+
+        const valorX =
+            datos.caso.min +
+            i * paso;
+
+
+        x.push(valorX);
+
+
+        try {
+
+            const valorY =
+                datos.f.evaluate({
+                    x: valorX
+                });
+
+
+            if (
+                Number.isFinite(valorY)
+            ) {
+
+                y.push(valorY);
+
+            } else {
+
+                y.push(null);
+
+            }
+
+        } catch {
+
+            y.push(null);
+
+        }
+
+    }
+
+
+    return {
+        x,
+        y
+    };
+
+}
+
+
+
+/* ==========================================================
+   MOSTRAR FUNCIÓN
+   ========================================================== */
+
+function mostrarFuncion() {
+
+    const datos =
+        obtenerDatos();
+
+
+    const valores =
+        crearValores(datos);
+
+
+    const funcion = {
+
+        x: valores.x,
+
+        y: valores.y,
+
+        type: "scatter",
+
+        mode: "lines",
+
+        name: "Función original",
+
+        line: {
+            width: 4
+        }
+
+    };
+
+
+    const layout = {
+
+        title:
+            datos.caso.titulo,
+
+        xaxis: {
+
+            title:
+                datos.caso.variable +
+                " (" +
+                datos.caso.unidadX +
+                ")"
+
+        },
+
+        yaxis: {
+
+            title:
+                datos.caso.unidadY
+
+        },
+
+        paper_bgcolor:
+            "rgba(0,0,0,0)",
+
+        plot_bgcolor:
+            "#f8fafc",
+
+        hovermode:
+            "x unified",
+
+        margin: {
+            t: 60,
+            r: 20,
+            b: 60,
+            l: 70
+        }
+
+    };
+
+
+    Plotly.newPlot(
+        "grafica",
+        [funcion],
+        layout,
+        {responsive: true}
+    );
+
+
+    actualizarResultados(datos);
+
+}
+
+
+
+/* ==========================================================
+   LINEALIZACIÓN
+   ========================================================== */
+
+function linealizar() {
+
+    const datos =
+        obtenerDatos();
+
+
+    const valores =
+        crearValores(datos);
+
+
+    const funcion = {
+
+        x: valores.x,
+
+        y: valores.y,
+
+        type: "scatter",
+
+        mode: "lines",
+
+        name: "Función original",
+
+        line: {
+            width: 4
+        }
+
+    };
+
+
+    const yLineal = [];
+
+
+    valores.x.forEach(x => {
+
+        yLineal.push(
+            datos.fa +
+            datos.fpa *
+            (x - datos.a)
+        );
+
+    });
+
+
+    const recta = {
+
+        x: valores.x,
+
+        y: yLineal,
+
+        type: "scatter",
+
+        mode: "lines",
+
+        name: "Linealización",
+
+        line: {
+            dash: "dash",
+            width: 3
+        }
+
+    };
+
+
+    const punto = {
+
+        x: [datos.a],
+
+        y: [datos.fa],
+
+        type: "scatter",
+
+        mode: "markers",
+
+        name: "Punto de tangencia",
+
+        marker: {
+            size: 12
+        }
+
+    };
+
+
+    const layout = {
+
+        title:
+            "Función y aproximación lineal",
+
+        xaxis: {
+            title:
+                datos.caso.variable
+        },
+
+        yaxis: {
+            title:
+                datos.caso.unidadY
+        },
+
+        paper_bgcolor:
+            "rgba(0,0,0,0)",
+
+        plot_bgcolor:
+            "#f8fafc",
+
+        hovermode:
+            "x unified"
+
+    };
+
+
+    Plotly.newPlot(
+        "grafica",
+        [
+            funcion,
+            recta,
+            punto
+        ],
+        layout,
+        {responsive: true}
+    );
+
+
+    actualizarResultados(datos);
+
+
+    document.getElementById(
+        "interpretacion"
+    ).innerHTML = `
+
+        <strong>Linealización:</strong>
+
+        <br><br>
+
+        La función original es no lineal.
+
+        <br><br>
+
+        La aproximación lineal se obtiene mediante:
+
+        <br><br>
+
+        <strong>
+        L(x) = f(a) + f'(a)(x-a)
+        </strong>
+
+        <br><br>
+
+        En el punto seleccionado:
+
+        <br>
+
+        a = ${datos.a}
+
+        <br><br>
+
+        El valor de la pendiente es:
+
+        <br>
+
+        f'(a) = ${datos.fpa.toFixed(4)}
+
+        <br><br>
+
+        Por lo tanto, cerca de a,
+        la función puede aproximarse mediante
+        una recta tangente.
+
+    `;
+
+}
+
+
+
+/* ==========================================================
+   DIFERENCIAL
+   ========================================================== */
+
+function calcularDiferencial() {
+
+    const datos =
+        obtenerDatos();
+
+
+    const valores =
+        crearValores(datos);
+
+
+    const funcion = {
+
+        x: valores.x,
+
+        y: valores.y,
+
+        type: "scatter",
+
+        mode: "lines",
+
+        name: "Función",
+
+        line: {
+            width: 4
+        }
+
+    };
+
+
+    const nuevoX =
+        datos.a + datos.dx;
+
+
+    const nuevoY =
+        datos.fa + datos.dy;
+
+
+    const yLineal = [];
+
+
+    valores.x.forEach(x => {
+
+        yLineal.push(
+            datos.fa +
+            datos.fpa *
+            (x - datos.a)
+        );
+
+    });
+
+
+    const recta = {
+
+        x: valores.x,
+
+        y: yLineal,
+
+        type: "scatter",
+
+        mode: "lines",
+
+        name: "Aproximación lineal",
+
+        line: {
+            dash: "dash",
+            width: 3
+        }
+
+    };
+
+
+    const puntoInicial = {
+
+        x: [datos.a],
+
+        y: [datos.fa],
+
+        type: "scatter",
+
+        mode: "markers",
+
+        name: "Punto inicial",
+
+        marker: {
+            size: 12
+        }
+
+    };
+
+
+    const puntoNuevo = {
+
+        x: [nuevoX],
+
+        y: [nuevoY],
+
+        type: "scatter",
+
+        mode: "markers",
+
+        name: "Punto aproximado",
+
+        marker: {
+            size: 12
+        }
+
+    };
+
+
+    const dxLinea = {
+
+        x: [
+            datos.a,
+            nuevoX
+        ],
+
+        y: [
+            datos.fa,
+            datos.fa
+        ],
+
+        type: "scatter",
+
+        mode: "lines",
+
+        name: "dx",
+
+        line: {
+            dash: "dot",
+            width: 3
+        }
+
+    };
+
+
+    const dyLinea = {
+
+        x: [
+            nuevoX,
+            nuevoX
+        ],
+
+        y: [
+            datos.fa,
+            nuevoY
+        ],
+
+        type: "scatter",
+
+        mode: "lines",
+
+        name: "dy",
+
+        line: {
+            dash: "dot",
+            width: 3
+        }
+
+    };
+
+
+    const layout = {
+
+        title:
+            "Interpretación gráfica del diferencial",
+
+        xaxis: {
+            title:
+                datos.caso.variable
+        },
+
+        yaxis: {
+            title:
+                datos.caso.unidadY
+        },
+
+        paper_bgcolor:
+            "rgba(0,0,0,0)",
+
+        plot_bgcolor:
+            "#f8fafc",
+
+        hovermode:
+            "x unified"
+
+    };
+
+
+    Plotly.newPlot(
+        "grafica",
+        [
+            funcion,
+            recta,
+            puntoInicial,
+            puntoNuevo,
+            dxLinea,
+            dyLinea
+        ],
+        layout,
+        {responsive: true}
+    );
+
+
+    actualizarResultados(datos);
+
+
+    document.getElementById(
+        "interpretacion"
+    ).innerHTML = `
+
+        <strong>Diferencial:</strong>
+
+        <br><br>
+
+        El diferencial se calcula mediante:
+
+        <br><br>
+
+        <strong>
+        dy = f'(a)dx
+        </strong>
+
+        <br><br>
+
+        En este caso:
+
+        <br>
+
+        f'(a) = ${datos.fpa.toFixed(4)}
+
+        <br>
+
+        dx = ${datos.dx}
+
+        <br><br>
+
+        Entonces:
+
+        <br>
+
+        dy = ${datos.dy.toFixed(4)}
+
+        <br><br>
+
+        El valor de dy representa
+        el cambio aproximado de la variable
+        dependiente cuando x cambia una pequeña cantidad.
+
+    `;
+
+}
+
+
+
+/* ==========================================================
+   RESULTADOS
+   ========================================================== */
+
+function actualizarResultados(datos) {
+
+    document.getElementById(
+        "resultadoFuncion"
+    ).textContent =
+        datos.caso.formula;
+
+
+    document.getElementById(
+        "resultadoDerivada"
+    ).textContent =
+        "f'(x) = " +
+        datos.derivada.toString();
+
+
+    document.getElementById(
+        "resultadoFa"
+    ).textContent =
+        "f(" +
+        datos.a +
+        ") = " +
+        datos.fa.toFixed(4);
+
+
+    document.getElementById(
+        "resultadoFpa"
+    ).textContent =
+        "f'(" +
+        datos.a +
+        ") = " +
+        datos.fpa.toFixed(4);
+
+
+    document.getElementById(
+        "resultadoL"
+    ).textContent =
+        "L(x) = " +
+        datos.L.toString();
+
+
+    document.getElementById(
+        "resultadoDy"
+    ).textContent =
+        "dy = " +
+        datos.dy.toFixed(4);
+
+}
+
+
+
+/* ==========================================================
+   ANÁLISIS COMPLETO
+   ========================================================== */
+
+function mostrarTodo() {
+
+    linealizar();
+
+
+    setTimeout(
+        function() {
+
+            calcularDiferencial();
+
+        },
+        400
+    );
+
+
+    const datos =
+        obtenerDatos();
+
+
+    document.getElementById(
+        "interpretacion"
+    ).innerHTML = `
+
+        <strong>
+        Análisis completo del escenario:
+        </strong>
+
+        <br><br>
+
+        1. Se identifica una función no lineal.
+
+        <br><br>
+
+        2. Se calcula su derivada para determinar
+        la tasa de cambio instantánea.
+
+        <br><br>
+
+        3. Se calcula f(a) y f'(a).
+
+        <br><br>
+
+        4. Se construye la linealización:
+
+        <br><br>
+
+        <strong>
+        L(x) = f(a) + f'(a)(x-a)
+        </strong>
+
+        <br><br>
+
+        5. Se utiliza el diferencial:
+
+        <br><br>
+
+        <strong>
+        dy = f'(a)dx
+        </strong>
+
+        <br><br>
+
+        Esto permite estudiar pequeños cambios
+        alrededor del punto analizado.
+
+    `;
+
+}
+
+
+
+/* ==========================================================
+   CHATBOT
+   ========================================================== */
+
+function enviarPregunta() {
+
+    const input =
+        document.getElementById("pregunta");
+
+
+    const pregunta =
+        input.value.trim();
+
+
+    if (pregunta === "") {
+        return;
+    }
+
+
+    agregarMensaje(
+        pregunta,
+        "usuario"
+    );
+
+
+    const respuesta =
+        generarRespuesta(pregunta);
+
+
+    setTimeout(
+        function() {
+
+            agregarMensaje(
+                respuesta,
+                "bot"
+            );
+
+        },
+        250
+    );
+
+
+    input.value = "";
+
+}
+
+
+
+/* ==========================================================
+   PREGUNTAS RÁPIDAS
+   ========================================================== */
+
+function preguntaRapida(texto) {
+
+    agregarMensaje(
+        texto,
+        "usuario"
+    );
+
+
+    const respuesta =
+        generarRespuesta(texto);
+
+
+    setTimeout(
+        function() {
+
+            agregarMensaje(
+                respuesta,
+                "bot"
+            );
+
+        },
+        250
+    );
+
+}
+
+
+
+/* ==========================================================
+   AGREGAR MENSAJE
+   ========================================================== */
+
+function agregarMensaje(texto, tipo) {
+
+    const contenedor =
+        document.getElementById(
+            "chatMensajes"
+        );
+
+
+    const mensaje =
+        document.createElement("div");
+
+
+    mensaje.className =
+        "mensaje " + tipo;
+
+
+    if (tipo === "bot") {
+
+        mensaje.innerHTML =
+            "<strong>🤖 Tutor:</strong><br>" +
+            texto;
+
+    } else {
+
+        mensaje.innerHTML =
+            "<strong>👤 Tú:</strong><br>" +
+            texto;
+
+    }
+
+
+    contenedor.appendChild(
+        mensaje
+    );
+
+
+    contenedor.scrollTop =
+        contenedor.scrollHeight;
+
+}
+
+
+
+/* ==========================================================
+   GENERADOR DE RESPUESTAS
+   ========================================================== */
+
+function generarRespuesta(pregunta) {
+
+    const texto =
+        pregunta.toLowerCase();
+
+
+    const datos =
+        obtenerDatos();
+
+
+    /* ------------------------------------------------------
+       DERIVADA
+       ------------------------------------------------------ */
+
+    if (
+        texto.includes("derivada") ||
+        texto.includes("derivar")
+    ) {
+
+        return `
+
+            La derivada representa la
+            <strong>tasa de cambio instantánea</strong>
+            de una función.
+
+            <br><br>
+
+            Para este escenario:
+
+            <br>
+
+            <strong>
+            f'(x) = ${datos.derivada.toString()}
+            </strong>
+
+            <br><br>
+
+            En el punto seleccionado:
+
+            <br>
+
+            <strong>
+            f'(${datos.a}) = ${datos.fpa.toFixed(4)}
+            </strong>
+
+            <br><br>
+
+            En términos de salud, puede interpretarse
+            como qué tan rápido cambia la variable
+            estudiada alrededor de ese punto.
+
+        `;
+
+    }
+
+
+    /* ------------------------------------------------------
+       LINEALIZACIÓN
+       ------------------------------------------------------ */
+
+    if (
+        texto.includes("linealización") ||
+        texto.includes("linealizacion") ||
+        texto.includes("linealizar")
+    ) {
+
+        return `
+
+            La <strong>linealización</strong> consiste
+            en aproximar una función no lineal mediante
+            una recta tangente cercana a un punto.
+
+            <br><br>
+
+            La fórmula es:
+
+            <br>
+
+            <strong>
+            L(x) = f(a) + f'(a)(x-a)
+            </strong>
+
+            <br><br>
+
+            Para el escenario actual:
+
+            <br>
+
+            <strong>
+            L(x) = ${datos.L.toString()}
+            </strong>
+
+            <br><br>
+
+            Esta aproximación es especialmente útil
+            cuando analizamos cambios pequeños alrededor
+            del punto seleccionado.
+
+        `;
+
+    }
+
+
+    /* ------------------------------------------------------
+       DIFERENCIAL
+       ------------------------------------------------------ */
+
+    if (
+        texto.includes("diferencial") ||
+        texto.includes("dy") ||
+        texto.includes("dx")
+    ) {
+
+        return `
+
+            El diferencial permite aproximar
+            el cambio de una variable dependiente
+            cuando la variable independiente cambia
+            una pequeña cantidad.
+
+            <br><br>
+
+            Se utiliza:
+
+            <br>
+
+            <strong>
+            dy = f'(a)dx
+            </strong>
+
+            <br><br>
+
+            En este escenario:
+
+            <br>
+
+            dx = ${datos.dx}
+
+            <br>
+
+            f'(a) = ${datos.fpa.toFixed(4)}
+
+            <br><br>
+
+            Por lo tanto:
+
+            <br>
+
+            <strong>
+            dy = ${datos.dy.toFixed(4)}
+            </strong>
+
+        `;
+
+    }
+
+
+    /* ------------------------------------------------------
+       f(a)
+       ------------------------------------------------------ */
+
+    if (
+        texto.includes("f(a)") ||
+        texto.includes("valor de f")
+    ) {
+
+        return `
+
+            El valor <strong>f(a)</strong> indica
+            el valor de la función exactamente
+            en el punto seleccionado.
+
+            <br><br>
+
+            En este caso:
+
+            <br>
+
+            <strong>
+            f(${datos.a}) = ${datos.fa.toFixed(4)}
+            </strong>
+
+            <br><br>
+
+            Es el punto donde construimos la
+            aproximación lineal.
+
+        `;
+
+    }
+
+
+    /* ------------------------------------------------------
+       GRÁFICA
+       ------------------------------------------------------ */
+
+    if (
+        texto.includes("gráfica") ||
+        texto.includes("grafica")
+    ) {
+
+        return `
+
+            La gráfica muestra visualmente
+            el comportamiento de la función.
+
+            <br><br>
+
+            Cuando seleccionas
+            <strong>Linealizar</strong>,
+            aparece la función original junto
+            con su recta tangente.
+
+            <br><br>
+
+            La idea principal es observar que,
+            cerca del punto <strong>a = ${datos.a}</strong>,
+            la recta puede aproximar bastante bien
+            a la función.
+
+        `;
+
+    }
+
+
+    /* ------------------------------------------------------
+       CASO DE SALUD
+       ------------------------------------------------------ */
+
+    if (
+        texto.includes("caso") ||
+        texto.includes("salud") ||
+        texto.includes("escenario")
+    ) {
+
+        return `
+
+            Actualmente estás trabajando con:
+
+            <br><br>
+
+            <strong>
+            ${datos.caso.titulo}
+            </strong>
+
+            <br><br>
+
+            ${datos.caso.descripcion}
+
+            <br><br>
+
+            La variable independiente representa:
+
+            <br>
+
+            <strong>
+            ${datos.caso.variable}
+            </strong>
+
+            <br><br>
+
+            y la variable dependiente representa:
+
+            <br>
+
+            <strong>
+            ${datos.caso.unidadY}
+            </strong>
+
+        `;
+
+    }
+
+
+    /* ------------------------------------------------------
+       ERC ESCUINTLA
+       ------------------------------------------------------ */
+
+    if (
+        texto.includes("escuintla") ||
+        texto.includes("renal") ||
+        texto.includes("erc")
+    ) {
+
+        if (casoActual === 5) {
+
+            return `
+
+                Este es un <strong>escenario hipotético</strong>
+                sobre un incremento de diagnósticos de
+                enfermedad renal crónica.
+
+                <br><br>
+
+                La función utilizada es:
+
+                <br>
+
+                <strong>
+                E(t) = 80e^(0.06t)
+                </strong>
+
+                <br><br>
+
+                La variable t representa meses y E(t)
+                representa casos detectados en el modelo.
+
+                <br><br>
+
+                Importante: este escenario no utiliza datos
+                reales de Escuintla y no representa una
+                estimación epidemiológica real.
+
+                <br><br>
+
+                Matemáticamente, el objetivo es estudiar
+                cómo se comporta una función exponencial
+                y aplicar derivadas, linealización
+                y diferenciales.
+
+            `;
+
+        }
+
+        return `
+
+            El escenario de ERC en Escuintla es un modelo
+            hipotético incluido con fines educativos.
+
+            <br><br>
+
+            Selecciona el escenario
+            <strong>ERC - Escuintla</strong>
+            para analizarlo directamente.
+
+        `;
+
+    }
+
+
+    /* ------------------------------------------------------
+       PASO A PASO
+       ------------------------------------------------------ */
+
+    if (
+        texto.includes("paso") ||
+        texto.includes("cómo se hace") ||
+        texto.includes("como se hace")
+    ) {
+
+        return `
+
+            El procedimiento general es:
+
+            <br><br>
+
+            <strong>1.</strong>
+            Identificar la función.
+
+            <br><br>
+
+            <strong>2.</strong>
+            Calcular la derivada.
+
+            <br><br>
+
+            <strong>3.</strong>
+            Elegir el punto a.
+
+            <br><br>
+
+            <strong>4.</strong>
+            Calcular f(a).
+
+            <br><br>
+
+            <strong>5.</strong>
+            Calcular f'(a).
+
+            <br><br>
+
+            <strong>6.</strong>
+            Construir:
+
+            <br>
+
+            <strong>
+            L(x)=f(a)+f'(a)(x-a)
+            </strong>
+
+            <br><br>
+
+            <strong>7.</strong>
+            Para un pequeño cambio dx:
+
+            <br>
+
+            <strong>
+            dy=f'(a)dx
+            </strong>
+
+        `;
+
+    }
+
+
+    /* ------------------------------------------------------
+       RESPUESTA GENERAL
+       ------------------------------------------------------ */
+
+    return `
+
+        Puedo ayudarte con este escenario.
+
+        <br><br>
+
+        Prueba preguntándome:
+
+        <br>
+
+        • ¿Qué es la derivada?
+
+        <br>
+
+        • ¿Qué es la linealización?
+
+        <br>
+
+        • ¿Qué es un diferencial?
+
+        <br>
+
+        • ¿Qué significa f(a)?
+
+        <br>
+
+        • ¿Cómo interpreto la gráfica?
+
+        <br>
+
+        • Explícame el caso de salud.
+
+        <br><br>
+
+        También puedo explicarte el procedimiento
+        <strong>paso a paso</strong>.
+
+    `;
+
+}
+
+
+
+/* ==========================================================
+   INICIALIZAR
+   ========================================================== */
+
+window.onload = function() {
+
+    seleccionarCaso(0);
+
+};
+
+</script>
+
+
+</body>
+
+</html>
